@@ -1194,6 +1194,7 @@ export const WORKTREE_ID_KEYED_MAP_KEYS = [
   'activeGroupIdByWorktree',
   'gitStatusByWorktree',
   'gitStatusHeadByWorktree',
+  'gitStatusHugeByWorktree',
   'gitIgnoredPathsByWorktree',
   'gitConflictOperationByWorktree',
   'trackedConflictPathsByWorktree',
@@ -1201,6 +1202,8 @@ export const WORKTREE_ID_KEYED_MAP_KEYS = [
   'gitBranchCompareSummaryByWorktree',
   'gitBranchCompareRequestKeyByWorktree',
   'gitBranchCompareRequestStatusHeadByWorktree',
+  'recentlyClosedEditorTabsByWorktree',
+  'remoteStatusesByWorktree',
   'showDotfilesByWorktree',
   'expandedDirs',
   'lastVisitedAtByWorktreeId',
@@ -1293,7 +1296,9 @@ function buildWorktreeRenameState(
         pages: snapshot.pages.map(withNewWorktreeId)
       })),
     unifiedTabsByWorktree: (tabs: { worktreeId: string }[]) => tabs.map(withNewWorktreeId),
-    groupsByWorktree: (groups: { worktreeId: string }[]) => groups.map(withNewWorktreeId)
+    groupsByWorktree: (groups: { worktreeId: string }[]) => groups.map(withNewWorktreeId),
+    recentlyClosedEditorTabsByWorktree: (files: { worktreeId: string }[]) =>
+      files.map(withNewWorktreeId)
   }
   for (const key of WORKTREE_ID_KEYED_MAP_KEYS) {
     renameKey(key, renameValueByKey[key] as ((value: unknown) => unknown) | undefined)
@@ -1320,14 +1325,6 @@ function buildWorktreeRenameState(
     oldWorkspaceKey,
     newWorkspaceKey
   )
-  // Re-key these on rename so a renamed worktree keeps its editor-undo + push/pull
-  // state. (Both removal paths — buildWorktreePurgeState and the single
-  // removeWorktree reducer — now also purge them on removal.)
-  renameKey('recentlyClosedEditorTabsByWorktree', (files: { worktreeId: string }[]) =>
-    files.map(withNewWorktreeId)
-  )
-  renameKey('remoteStatusesByWorktree')
-
   const openFiles = s.openFiles?.some((f) => f.worktreeId === oldWorktreeId)
     ? s.openFiles.map((f) =>
         f.worktreeId === oldWorktreeId ? { ...f, worktreeId: newWorktreeId } : f
